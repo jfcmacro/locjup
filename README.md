@@ -1,2 +1,5 @@
 # locjup
-Start a local jupyter notebook and open a corresponding browser
+
+Starts a local jupyter notebook and open browser with localdirectory
+
+

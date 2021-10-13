@@ -1,0 +1,3 @@
+// the configured options and settings for locjup
+#define LOCJUP_VERSION_MAJOR @locjup_VERSION_MAJOR@
+#define LOCJUP_VERSION_MINOR @locjup_VERSION_MINOR@
