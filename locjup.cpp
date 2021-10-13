@@ -7,15 +7,18 @@
 #include <getopt.h>
 #include "locjup.h"
 
-// I hate this global variables are evil
-static pid_t jupchild;
-
 static void show_help(const char* progname) {
-  std::cout << progname
-	    << " [-h|--help] show this output"
-	    << std::endl
+  std::cout << "Modo de empleo: "
 	    << progname
-	    << " [-v|--version] show current version"
+	    << " -- launches local jupyter and starts default browser"
+	    << std::endl
+	    << "                "
+	    << progname
+	    << " [-h|--help] -- show this output"
+	    << std::endl
+	    << "                "
+	    << progname
+	    << " [-v|--version] -- show current version"
 	    << std::endl;
   exit(EXIT_SUCCESS);
 }
@@ -23,14 +26,9 @@ static void show_help(const char* progname) {
 static void show_version(const char* progname) {
   std::cout << progname
 	    << " version "
-	    << LOCJUP_VERSION_MAJOR
-	    << "."
-	    << LOCJUP_VERSION_MINOR << std::endl;
+	    << LOCJUP_VERSION
+	    << std::endl;
   exit(EXIT_SUCCESS);
-}
-
-static void handler(int signo) {
-  kill(jupchild, signo);
 }
 
 int
@@ -71,30 +69,34 @@ main(int argc, char *argv[]) {
     }
   }
 
+  struct sigaction sa_old;
+  struct sigaction sa_new;
+
+  sa_new.sa_handler = SIG_IGN; // handler;
+  sigemptyset(&sa_new.sa_mask);
+  sa_new.sa_flags = 0;
+  ::sigaction(SIGINT, &sa_new, &sa_old);
+  pid_t jupchild = 0;
+
   if ((jupchild = ::fork()) == 0) {
     execlp("jupyter", "jupyter", "notebook", "--notebook-dir=\".\"", nullptr);
     exit(127);
   }
   else {
-    struct sigaction sa_old;
-    struct sigaction sa_new;
-
-    sa_new.sa_handler = handler;
-    sigemptyset(&sa_new.sa_mask);
-    sa_new.sa_flags = 0;
-    ::sigaction(SIGINT, &sa_new, &sa_old);
     ::sleep(5);
-    if (::fork() == 0) {
+    pid_t xdgchild = 0;
+    if ((xdgchild = ::fork()) == 0) {
       ::execlp("xdg-open", "xdg-open", "https://localhost:8888", nullptr);
       ::exit(128);
     }
     else {
       int status;
+      ::waitpid(xdgchild, &status, 0);
       ::waitpid(jupchild, &status, 0);
     }
-
-    ::sigaction(SIGINT, &sa_old, nullptr);
   }
+
+  ::sigaction(SIGINT, &sa_old, nullptr);
 
   return EXIT_SUCCESS;
 }
