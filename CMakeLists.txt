@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(locjup VERSION 0.1.0)
+project(locjup VERSION 0.1.1)
 
 configure_file(locjup.h.in locjup.h)
 add_executable(locjup locjup.cpp)
