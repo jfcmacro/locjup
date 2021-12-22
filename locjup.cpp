@@ -79,7 +79,7 @@ main(int argc, char *argv[]) {
   pid_t jupchild = 0;
 
   if ((jupchild = ::fork()) == 0) {
-    execlp("jupyter", "jupyter", "notebook", "--notebook-dir=\".\"", nullptr);
+    execlp("jupyter", "jupyter", "notebook", "--notebook-dir=.", nullptr);
     exit(127);
   }
   else {
